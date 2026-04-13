@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>系统动力学仿真计算全景交互系统｜课程设计版</title>
-  <meta name="description" content="系统动力学仿真实验平台，支持参数联动、流程图缩放拖拽、图表分析与源码展示。">
+  <meta name="description" content="系统动力学仿真计算全景交互系统，涵盖一阶正反馈、一阶负反馈、二阶负反馈，支持参数联动、流程图缩放拖拽、图表分析、步骤讲解与源码展示。">
   <link rel="stylesheet" href="./style.css" />
   <script>
     window.MathJax = {
@@ -24,35 +24,92 @@
       <div class="hero-orb orb-b"></div>
       <div class="hero-orb orb-c"></div>
 
-      <!-- 居中布局的头部区域 -->
       <div class="hero-centered">
         <div class="hero-topline">
-          <span class="hero-pill">Course Design Edition · GitHub Pages Ready</span>
-          <span class="hero-pill subtle">作者：交通工程学院 王晚香</span>
+          <span class="hero-pill">
+            <!-- 琥珀橙 皇冠 -->
+            <svg class="icon" style="color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 15l2-8 4 3 2-6 2 6 4-3 2 8" fill="currentColor" fill-opacity="0.18" stroke="none" />
+              <path d="M4 15l2-8 4 3 2-6 2 6 4-3 2 8M4 19h16M4 15h16" />
+            </svg>
+            Course Design Edition · GitHub Pages Ready
+          </span>
         </div>
 
-        <div class="hero-tag">System Dynamics · DYNAMO · Interactive Courseware</div>
+        <div class="hero-tag">
+          <!-- 靛蓝色 网络节点 -->
+          <svg class="icon" style="color: #6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" fill="currentColor" fill-opacity="0.2" stroke="none"/>
+            <path d="M12 9v-4M12 19v-4M7.5 10.5l-3.5-2M19.5 15.5l-3.5-2M7.5 13.5l-3.5 2M19.5 8.5l-3.5 2" />
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          System Dynamics · DYNAMO · Interactive Courseware
+        </div>
+        
         <h1>系统动力学仿真计算<br>全景交互系统</h1>
+
+        <div class="hero-author">
+          <!-- 翠绿色 作者 -->
+          <svg class="icon" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" fill="currentColor" fill-opacity="0.2" stroke="none"/>
+            <path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2" />
+            <circle cx="12" cy="8" r="4" />
+          </svg>
+          作者：交通工程学院 王晚香
+        </div>
+
         <p class="hero-subtitle">
           面向课程设计、课堂演示与汇报答辩打造的静态交互版系统动力学实验平台。
           支持三个经典教材例题的参数联动、动态推演、步骤讲解、流程图缩放拖拽、结果分析与源码展示。
         </p>
 
         <div class="hero-badges">
-          <span>三大例题一体化</span>
-          <span>纯前端静态部署</span>
-          <span>流程图可缩放拖拽</span>
-          <span>步骤化教学讲解</span>
-          <span>图表联动分析</span>
+          <!-- 亮蓝色 -->
+          <span>
+            <svg class="icon" style="color: #3b82f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+            三大例题一体化
+          </span>
+          <!-- 紫罗兰 -->
+          <span>
+            <svg class="icon" style="color: #8b5cf6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3l-8 11h7l-1 7 8-11h-7z" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M13 3l-8 11h7l-1 7 8-11h-7z"/></svg>
+            纯前端静态部署
+          </span>
+          <!-- 玫瑰粉 -->
+          <span>
+            <svg class="icon" style="color: #ec4899;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M8 8h8v8H8z"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+            流程图可缩放拖拽
+          </span>
+          <!-- 橙黄色 -->
+          <span>
+            <svg class="icon" style="color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h10M9 12h10M9 19h10M5 5h0M5 12h0M5 19h0" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M9 5h10M9 12h10M9 19h10M5 5l.01 0M5 12l.01 0M5 19l.01 0"/></svg>
+            步骤化教学讲解
+          </span>
+          <!-- 蓝绿色 -->
+          <span>
+            <svg class="icon" style="color: #14b8a6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path d="M12 12L12 3a9 9 0 019 9h-9z" fill="currentColor" fill-opacity="0.3"/></svg>
+            图表联动分析
+          </span>
         </div>
       </div>
     </header>
 
     <nav class="top-tabs">
-      <button class="top-tab active" data-tab="sandbox">动态推演沙盒</button>
-      <button class="top-tab" data-tab="steps">步骤详解</button>
-      <button class="top-tab" data-tab="source">核心算法源码</button>
-      <button class="top-tab" data-tab="analysis">全局结果分析</button>
+      <button class="top-tab active" data-tab="sandbox">
+        <svg class="icon" style="color: #3b82f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v4l-3 7v3h10v-3l-3-7V3" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M9 3h6M10 3v4l-3 7v3h10v-3l-3-7V3"/><path d="M10 12h4"/></svg>
+        动态推演沙盒
+      </button>
+      <button class="top-tab" data-tab="steps">
+        <svg class="icon" style="color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        步骤详解
+      </button>
+      <button class="top-tab" data-tab="source">
+        <svg class="icon" style="color: #64748b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" fill="currentColor" fill-opacity="0.15" stroke="none"/><polyline points="8 10 12 14 8 18"/><line x1="13" y1="18" x2="17" y2="18"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        核心算法源码
+      </button>
+      <button class="top-tab" data-tab="analysis">
+        <svg class="icon" style="color: #06b6d4;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18" fill="none"/><path d="M19 9l-5 5-4-4-4 4" fill="none"/><path d="M19 9v5m0-5h-5" fill="none"/><path d="M19 9l-5 5-4-4-4 4" fill="currentColor" fill-opacity="0.15" stroke="none"/></svg>
+        全局结果分析
+      </button>
     </nav>
 
     <main>
@@ -62,7 +119,7 @@
         <div class="layout-grid">
           <aside class="panel control-panel">
             <div class="panel-head">
-              <h2>参数控制与课堂操作区</h2>
+              <h2><svg class="icon" style="color: #8b5cf6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>参数控制与课堂操作区</h2>
               <p>选择例题、拖动滑块实时调节参数、播放离散演化过程，并导出结果表。</p>
             </div>
 
@@ -71,20 +128,25 @@
             <div id="param-form" class="param-form"></div>
 
             <div class="control-actions">
-              <!-- 去掉了“基于当前参数实时计算”按钮，改为滑块拖拽自动更新 -->
-              <button class="ghost-btn" id="reset-btn">恢复教材参数</button>
-              <button class="ghost-btn" id="export-btn">导出当前结果 CSV</button>
+              <button class="ghost-btn" id="reset-btn">
+                <svg class="icon" style="color: #64748b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" fill="currentColor" fill-opacity="0.1" stroke="none"/><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                恢复教材参数
+              </button>
+              <button class="ghost-btn" id="export-btn">
+                <svg class="icon" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" fill="currentColor" fill-opacity="0.1" stroke="none"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+                导出当前结果 CSV
+              </button>
             </div>
 
             <div class="playback-panel">
               <div class="playback-head">
-                <h3>离散过程播放</h3>
+                <h3><svg class="icon" style="color: #f43f5e;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.15" stroke="none"/><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/></svg>离散过程播放</h3>
                 <span class="mini-chip" id="playback-step-label">当前步：0</span>
               </div>
               <div class="playback-controls">
-                <button class="mini-btn" id="play-btn">播放</button>
-                <button class="mini-btn" id="pause-btn">暂停</button>
-                <button class="mini-btn" id="replay-btn">重置</button>
+                <button class="mini-btn" id="play-btn"><svg class="icon" style="color: #10b981;" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 4 20 12 6 20 6 4"/></svg>播放</button>
+                <button class="mini-btn" id="pause-btn"><svg class="icon" style="color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg>暂停</button>
+                <button class="mini-btn" id="replay-btn"><svg class="icon" style="color: #64748b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 20l-6-6 6-6"/><path d="M4 14h10a6 6 0 0 0 0-12H9"/></svg>重置</button>
               </div>
               <input id="playback-range" type="range" min="0" max="0" value="0" step="1" />
               <div class="playback-meta">
@@ -100,7 +162,7 @@
           <section class="panel main-panel">
             <div class="two-col-header">
               <div>
-                <h2>模型结构、流程图与 DYNAMO 方程</h2>
+                <h2><svg class="icon" style="color: #3b82f6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" fill="currentColor" fill-opacity="0.15" stroke="none"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>模型结构、流程图与 DYNAMO 方程</h2>
                 <p>当前例题的流程图、变量含义、方程系统与动态响应会同步切换。</p>
               </div>
               <div class="status-chip" id="feedback-chip">反馈类型</div>
@@ -166,7 +228,7 @@
       <section class="tab-panel" id="tab-steps">
         <div class="panel tutorial-panel">
           <div class="panel-head">
-            <h2>步骤详解</h2>
+            <h2><svg class="icon" style="color: #f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h10M9 12h10M9 19h10M5 5l.01 0M5 12l.01 0M5 19l.01 0" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M9 5h10M9 12h10M9 19h10M5 5l.01 0M5 12l.01 0M5 19l.01 0"/></svg>步骤详解</h2>
             <p>将教材中的系统动力学建模过程拆解为“模型识别—方程配置—速率计算—水准更新—响应判读”五段式讲解。</p>
           </div>
 
@@ -198,7 +260,7 @@
       <section class="tab-panel" id="tab-source">
         <div class="panel source-panel">
           <div class="panel-head">
-            <h2>核心算法源码</h2>
+            <h2><svg class="icon" style="color: #6366f1;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" fill="currentColor" fill-opacity="0.15" stroke="none"/><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>核心算法源码</h2>
             <p>展示当前例题的 Python 求解逻辑，同时静态站点使用 JavaScript 实现等价离散仿真，兼顾教学表达与部署便利性。</p>
           </div>
           <div class="code-toolbar">
@@ -213,7 +275,7 @@
         <div class="analysis-grid">
           <div class="panel overview-panel">
             <div class="panel-head">
-              <h2>三大例题全局结果对照</h2>
+              <h2><svg class="icon" style="color: #8b5cf6;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h7" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M4 6h16M4 12h16M4 18h7"/></svg>三大例题全局结果对照</h2>
               <p>动态反映当前参数下三类反馈结构的长期行为差异。</p>
             </div>
             <div class="overview-cards" id="overview-cards"></div>
@@ -221,7 +283,7 @@
 
           <div class="panel compare-chart-panel">
             <div class="panel-head">
-              <h2>结构对比图</h2>
+              <h2><svg class="icon" style="color: #ec4899;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M18 20V10M12 20V4M6 20v-6"/></svg>结构对比图</h2>
               <p>以“主变量末期值 / 初始值”为统一指标，比较放大、收敛与耦合动态特征。</p>
             </div>
             <canvas id="compare-chart"></canvas>
@@ -229,7 +291,7 @@
 
           <div class="panel report-panel" id="report-panel">
             <div class="panel-head">
-              <h2>课程设计结论摘要</h2>
+              <h2><svg class="icon" style="color: #10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fill-opacity="0.15" stroke="none"/><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>课程设计结论摘要</h2>
               <p>可直接用于课程设计报告结论部分或课堂展示中的总结页。</p>
             </div>
             <div id="report-summary" class="report-summary"></div>
