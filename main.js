@@ -3,11 +3,13 @@
     document.body.innerHTML = `
       <div style="padding:40px;font-family:'Segoe UI','Microsoft YaHei',sans-serif;">
         <h2>数据未加载</h2>
-        <p>请确认 <span class="mono">data.js</span> 文件存在，且位于仓库根目录。</p>
+        <p>请确认 <strong>data.js</strong> 文件存在，且位于仓库根目录。</p>
       </div>
     `;
     return;
   }
+
+  const models = window.APP_CONFIG.models;
 
   const state = {
     modelIndex: 0,
@@ -17,6 +19,8 @@
     secondaryChart: null,
     compareChart: null,
     stepIndex: 0,
+    playbackIndex: 0,
+    playTimer: null,
     diagramTransform: { x: 0, y: 0, scale: 1 },
     drag: { active: false, startX: 0, startY: 0, origX: 0, origY: 0 }
   };
@@ -32,6 +36,7 @@
     resetBtn: document.getElementById('reset-btn'),
     exportBtn: document.getElementById('export-btn'),
     smartTip: document.getElementById('smart-tip'),
+    snapshotCard: document.getElementById('snapshot-card'),
     feedbackChip: document.getElementById('feedback-chip'),
     equationList: document.getElementById('equation-list'),
     insightBanner: document.getElementById('insight-banner'),
@@ -48,12 +53,17 @@
     codeBadge: document.getElementById('code-badge'),
     overviewCards: document.getElementById('overview-cards'),
     compareChartCanvas: document.getElementById('compare-chart'),
+    reportSummary: document.getElementById('report-summary'),
     diagramStage: document.getElementById('diagram-stage'),
     diagramContainer: document.getElementById('diagram-container'),
-    diagramResetBtn: document.getElementById('diagram-reset-btn')
+    diagramResetBtn: document.getElementById('diagram-reset-btn'),
+    playBtn: document.getElementById('play-btn'),
+    pauseBtn: document.getElementById('pause-btn'),
+    replayBtn: document.getElementById('replay-btn'),
+    playbackRange: document.getElementById('playback-range'),
+    playbackStepLabel: document.getElementById('playback-step-label'),
+    playbackMaxLabel: document.getElementById('playback-max-label')
   };
-
-  const models = window.APP_CONFIG.models;
 
   function currentModel() {
     return models[state.modelIndex];
@@ -75,32 +85,15 @@
     });
   }
 
-  function escapeHtml(str) {
-    return String(str)
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;');
-  }
-
-  function resetParamsForModel() {
-    const model = currentModel();
-    state.params[model.id] = {};
-    model.params.forEach(p => {
-      state.params[model.id][p.key] = p.value;
-    });
-  }
-
-  function getParams() {
-    const model = currentModel();
-    return state.params[model.id];
+  function setTheme() {
+    document.body.dataset.theme = currentModel().theme || 'positive';
   }
 
   function initState() {
-    models.forEach((_, idx) => {
-      state.modelIndex = idx;
-      resetParamsForModel();
+    models.forEach(model => {
+      state.params[model.id] = {};
+      model.params.forEach(p => state.params[model.id][p.key] = p.value);
     });
-    state.modelIndex = 0;
   }
 
   function bindTabs() {
@@ -129,12 +122,16 @@
 
     [...dom.modelSwitcher.querySelectorAll('.model-card-btn')].forEach(btn => {
       btn.addEventListener('click', () => {
+        stopPlayback();
         state.modelIndex = Number(btn.dataset.modelIndex);
         state.stepIndex = 0;
-        if (!state.params[currentModel().id]) resetParamsForModel();
         rerenderAll();
       });
     });
+  }
+
+  function getParams() {
+    return state.params[currentModel().id];
   }
 
   function renderMeta() {
@@ -143,6 +140,7 @@
       <h3>${model.name}</h3>
       <p>${model.description}</p>
       <p style="margin-top:10px;"><strong>教材映射：</strong>${model.sourceHint}</p>
+      <p style="margin-top:10px;"><strong>动态特征：</strong>${model.summary}</p>
     `;
 
     dom.presetRow.innerHTML = model.presets.map(p => `
@@ -165,15 +163,15 @@
           </div>
           <div class="param-value-wrap">
             <input class="param-number" type="number"
-                   data-key="${p.key}" data-role="number"
-                   min="${p.min}" max="${p.max}" step="${p.step}"
-                   value="${params[p.key]}" />
+              data-key="${p.key}" data-role="number"
+              min="${p.min}" max="${p.max}" step="${p.step}"
+              value="${params[p.key]}" />
           </div>
         </div>
         <input type="range"
-               data-key="${p.key}" data-role="range"
-               min="${p.min}" max="${p.max}" step="${p.step}"
-               value="${params[p.key]}" />
+          data-key="${p.key}" data-role="range"
+          min="${p.min}" max="${p.max}" step="${p.step}"
+          value="${params[p.key]}" />
         <div class="param-range-meta">
           <span>最小：${p.min}</span>
           <span>最大：${p.max}</span>
@@ -185,7 +183,7 @@
       input.addEventListener('input', () => {
         const key = input.dataset.key;
         const val = Number(input.value);
-        params[key] = val;
+        getParams()[key] = val;
 
         dom.paramForm.querySelectorAll(`[data-key="${key}"]`).forEach(el => {
           if (el !== input) el.value = val;
@@ -195,12 +193,8 @@
   }
 
   function simulate(model, params) {
-    if (model.id === 'positive_feedback') {
-      return simulatePositive(params);
-    }
-    if (model.id === 'negative_feedback') {
-      return simulateNegative(params);
-    }
+    if (model.id === 'positive_feedback') return simulatePositive(params);
+    if (model.id === 'negative_feedback') return simulateNegative(params);
     return simulateSecondOrder(params);
   }
 
@@ -208,26 +202,16 @@
     const steps = Math.max(1, Math.round(params.steps));
     const DT = Number(params.DT);
     const C1 = Number(params.C1);
-
     let L1 = Number(params.L1);
-
     const rows = [];
+
     for (let k = 0; k <= steps; k++) {
       const R1 = L1 * C1;
-      rows.push({
-        t: k,
-        L1: round(L1, 4),
-        R1: round(R1, 4)
-      });
+      rows.push({ t: k, L1: round(L1, 4), R1: round(R1, 4) });
       L1 = L1 + DT * R1;
     }
 
-    return {
-      time: rows.map(r => r.t),
-      rows,
-      primaryKey: 'L1',
-      secondaryKeys: ['R1']
-    };
+    return { time: rows.map(r => r.t), rows, primaryKey: 'L1', secondaryKeys: ['R1'] };
   }
 
   function simulateNegative(params) {
@@ -235,28 +219,17 @@
     const DT = Number(params.DT);
     const W = Number(params.W);
     const Y = Number(params.Y);
-
     let D = Number(params.D);
-
     const rows = [];
+
     for (let k = 0; k <= steps; k++) {
       const X = Y - D;
       const R1 = X / W;
-      rows.push({
-        t: k,
-        D: round(D, 4),
-        X: round(X, 4),
-        R1: round(R1, 4)
-      });
+      rows.push({ t: k, D: round(D, 4), X: round(X, 4), R1: round(R1, 4) });
       D = D + DT * R1;
     }
 
-    return {
-      time: rows.map(r => r.t),
-      rows,
-      primaryKey: 'D',
-      secondaryKeys: ['R1', 'X']
-    };
+    return { time: rows.map(r => r.t), rows, primaryKey: 'D', secondaryKeys: ['R1', 'X'] };
   }
 
   function simulateSecondOrder(params) {
@@ -265,11 +238,10 @@
     const Z = Number(params.Z);
     const W = Number(params.W);
     const Y = Number(params.Y);
-
     let M = Number(params.M);
     let Q = Number(params.Q);
-
     const rows = [];
+
     for (let k = 0; k <= steps; k++) {
       const D = Y - Q;
       const R1 = D / Z;
@@ -286,17 +258,11 @@
 
       const nextM = M + DT * (R1 - R2);
       const nextQ = Q + DT * R2;
-
       M = nextM;
       Q = nextQ;
     }
 
-    return {
-      time: rows.map(r => r.t),
-      rows,
-      primaryKey: 'Q',
-      secondaryKeys: ['M', 'R1', 'R2', 'D']
-    };
+    return { time: rows.map(r => r.t), rows, primaryKey: 'Q', secondaryKeys: ['M', 'R1', 'R2', 'D'] };
   }
 
   function buildSmartTip(result) {
@@ -311,10 +277,10 @@
       text = `智能提示：当前参数下，客运量从 ${fmt(first.L1, 2)} 增长到 ${fmt(last.L1, 2)}，放大倍数约 ${fmt(ratio, 2)}。若继续增大增长率 C1 或步长 DT，指数增长会更明显。`;
     } else if (model.id === 'negative_feedback') {
       const gapAbs = Math.abs(last.X);
-      text = `智能提示：系统末期库存为 ${fmt(last.D, 2)}，距离目标库存的偏差约 ${fmt(gapAbs, 2)}。若希望更快收敛，可减小调整时间 W；但过小可能导致响应过快。`;
+      text = `智能提示：系统末期库存为 ${fmt(last.D, 2)}，距离目标库存的偏差约 ${fmt(gapAbs, 2)}。若希望更快收敛，可减小调整时间 W；过小会使响应更激进。`;
     } else {
       const diff = Math.abs(last.D);
-      text = `智能提示：系统末期人才拥有量为 ${fmt(last.Q, 2)}，供需差约 ${fmt(diff, 2)}。较小的 Z 会强化招生响应，较小的 W 会加快毕业转化，系统可能出现更强超调。`;
+      text = `智能提示：系统末期人才拥有量为 ${fmt(last.Q, 2)}，供需差约 ${fmt(diff, 2)}。较小的 Z 会强化招生响应，较小的 W 会加快毕业转化，更容易出现超调。`;
     }
     dom.smartTip.textContent = text;
   }
@@ -324,8 +290,8 @@
     const rows = result.rows;
     const first = rows[0];
     const last = rows[rows.length - 1];
-
     let html = '';
+
     if (model.id === 'positive_feedback') {
       html = `当前系统呈现 <strong>单库存正反馈放大</strong>：主变量 <strong>${model.primaryVar}</strong> 从 <strong>${fmt(first.L1, 2)}</strong> 增长到 <strong>${fmt(last.L1, 2)}</strong>，增长流量随库存同步放大。`;
     } else if (model.id === 'negative_feedback') {
@@ -351,29 +317,29 @@
     const rows = result.rows;
     const first = rows[0];
     const last = rows[rows.length - 1];
+    let kpis = [];
 
-    const kpis = [];
     if (model.id === 'positive_feedback') {
-      kpis.push(
+      kpis = [
         ['初始主变量', fmt(first.L1, 2)],
         ['末期主变量', fmt(last.L1, 2)],
         ['末期增长流量', fmt(last.R1, 2)],
         ['放大倍数', fmt(last.L1 / first.L1, 2)]
-      );
+      ];
     } else if (model.id === 'negative_feedback') {
-      kpis.push(
+      kpis = [
         ['初始库存', fmt(first.D, 2)],
         ['末期库存', fmt(last.D, 2)],
         ['末期差额', fmt(last.X, 2)],
         ['末期订货速度', fmt(last.R1, 2)]
-      );
+      ];
     } else {
-      kpis.push(
+      kpis = [
         ['末期人才量 Q', fmt(last.Q, 2)],
         ['末期在校学生 M', fmt(last.M, 2)],
         ['末期供需差 D', fmt(last.D, 2)],
         ['末期毕业率 R2', fmt(last.R2, 2)]
-      );
+      ];
     }
 
     dom.kpiGrid.innerHTML = kpis.map(([label, value]) => `
@@ -384,108 +350,27 @@
     `).join('');
   }
 
-  function destroyCharts() {
-    state.primaryChart?.destroy();
-    state.secondaryChart?.destroy();
-    state.compareChart?.destroy();
-    state.primaryChart = null;
-    state.secondaryChart = null;
-    state.compareChart = null;
-  }
-
-  function renderCharts(result) {
-    state.primaryChart?.destroy();
-    state.secondaryChart?.destroy();
-
-    const model = currentModel();
-    const labels = result.time;
-
-    let primaryDataset = [];
-    let secondaryDatasets = [];
-
-    if (model.id === 'positive_feedback') {
-      primaryDataset = result.rows.map(r => r.L1);
-      secondaryDatasets = [
-        { label: 'R1 年增加量', data: result.rows.map(r => r.R1) }
-      ];
-      dom.primaryChartLabel.textContent = '客运量 L1';
-      dom.secondaryChartLabel.textContent = '年增加量 R1';
-    } else if (model.id === 'negative_feedback') {
-      primaryDataset = result.rows.map(r => r.D);
-      secondaryDatasets = [
-        { label: 'R1 订货速度', data: result.rows.map(r => r.R1) },
-        { label: 'X 库存差额', data: result.rows.map(r => r.X) }
-      ];
-      dom.primaryChartLabel.textContent = '库存量 D';
-      dom.secondaryChartLabel.textContent = '订货速度 / 库存差额';
-    } else {
-      primaryDataset = result.rows.map(r => r.Q);
-      secondaryDatasets = [
-        { label: 'M 在校学生', data: result.rows.map(r => r.M) },
-        { label: 'R1 招生率', data: result.rows.map(r => r.R1) },
-        { label: 'R2 毕业率', data: result.rows.map(r => r.R2) },
-        { label: 'D 供需差', data: result.rows.map(r => r.D) }
-      ];
-      dom.primaryChartLabel.textContent = '人才拥有量 Q';
-      dom.secondaryChartLabel.textContent = 'M / R1 / R2 / D';
-    }
-
-    state.primaryChart = new Chart(dom.primaryChartCanvas, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: `${model.primaryVar} 主变量`,
-          data: primaryDataset,
-          borderWidth: 3,
-          tension: 0.28,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: true } }
-      }
-    });
-
-    state.secondaryChart = new Chart(dom.secondaryChartCanvas, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: secondaryDatasets.map(ds => ({
-          ...ds,
-          borderWidth: 2,
-          tension: 0.25,
-          fill: false
-        }))
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: true } }
-      }
-    });
-  }
-
   function renderTable(result) {
     const rows = result.rows;
     const keys = Object.keys(rows[0]);
-
     dom.resultTable.innerHTML = `
       <thead>
         <tr>${keys.map(k => `<th>${k}</th>`).join('')}</tr>
       </thead>
       <tbody>
-        ${rows.map(r => `
-          <tr>
-            ${keys.map(k => `<td>${fmt(r[k], 4)}</td>`).join('')}
+        ${rows.map((row, idx) => `
+          <tr data-row-index="${idx}">
+            ${keys.map(k => `<td>${fmt(row[k], 4)}</td>`).join('')}
           </tr>
         `).join('')}
       </tbody>
     `;
+  }
+
+  function highlightCurrentRow() {
+    [...dom.resultTable.querySelectorAll('tbody tr')].forEach(tr => {
+      tr.classList.toggle('current-row', Number(tr.dataset.rowIndex) === state.playbackIndex);
+    });
   }
 
   function renderSteps() {
@@ -517,15 +402,14 @@
         <p>${step.text}</p>
       </div>
       <div class="step-block">
-        <h4>本例题在这一环节的关键点</h4>
+        <h4>本环节关键点</h4>
         ${step.bullets?.length
           ? `<ul>${step.bullets.map(b => `<li>${b}</li>`).join('')}</ul>`
-          : `<p>这一环节主要用于将上一环节得到的变量关系转化为可计算的离散迭代逻辑。</p>`
-        }
+          : `<p>这一环节主要将变量关系转化为可计算的离散迭代逻辑。</p>`}
       </div>
       <div class="step-block">
-        <h4>教师讲解提示</h4>
-        <p>建议结合右侧 DYNAMO 方程、流程图及主响应曲线同步讲解，从“变量含义 → 方程建立 → 每一步如何更新”三个层次逐步展开。</p>
+        <h4>课堂演示建议</h4>
+        <p>建议将当前页面与主响应曲线同步展示，先解释变量，再解释方程，最后解释每一步如何更新与为何产生当前动态行为。</p>
       </div>
     `;
   }
@@ -537,9 +421,9 @@
   }
 
   function renderAnalysis() {
-    const results = models.map((model, idx) => {
-      const params = deepClone(state.params[model.id] || Object.fromEntries(model.params.map(p => [p.key, p.value])));
-      return { model, result: simulate(model, params), idx };
+    const results = models.map(model => {
+      const params = deepClone(state.params[model.id]);
+      return { model, result: simulate(model, params) };
     });
 
     dom.overviewCards.innerHTML = results.map(({ model, result }) => {
@@ -572,14 +456,31 @@
             const pk = result.primaryKey;
             return rows[rows.length - 1][pk] / (rows[0][pk] || 1);
           }),
-          borderWidth: 2
+          borderWidth: 2,
+          borderRadius: 12
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true }
+        }
       }
     });
+
+    dom.reportSummary.innerHTML = results.map(({ model, result }) => {
+      const rows = result.rows;
+      const first = rows[0];
+      const last = rows[rows.length - 1];
+      return `
+        <div class="report-item">
+          <h3>${model.name}</h3>
+          <p>${model.reportText}</p>
+          <div class="report-metric">主变量：${model.primaryVar}，初值 ${fmt(first[result.primaryKey], 2)}，末值 ${fmt(last[result.primaryKey], 2)}</div>
+        </div>
+      `;
+    }).join('');
   }
 
   function exportCsv() {
@@ -600,6 +501,198 @@
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  }
+
+  function pointDataset(label, rowValue, index, color) {
+    const len = state.result.rows.length;
+    const data = Array.from({ length: len }, (_, i) => (i === index ? rowValue : null));
+    return {
+      label,
+      data,
+      type: 'line',
+      pointRadius: 6,
+      pointHoverRadius: 8,
+      borderWidth: 0,
+      showLine: false,
+      spanGaps: true,
+      borderColor: color,
+      backgroundColor: color
+    };
+  }
+
+  function renderCharts(result) {
+    state.primaryChart?.destroy();
+    state.secondaryChart?.destroy();
+
+    const model = currentModel();
+    const labels = result.time;
+    const row0 = result.rows[state.playbackIndex] || result.rows[0];
+
+    let primaryDataset = [];
+    let secondarySeries = [];
+
+    if (model.id === 'positive_feedback') {
+      primaryDataset = result.rows.map(r => r.L1);
+      secondarySeries = [{ label: 'R1 年增加量', key: 'R1' }];
+      dom.primaryChartLabel.textContent = '客运量 L1';
+      dom.secondaryChartLabel.textContent = '年增加量 R1';
+    } else if (model.id === 'negative_feedback') {
+      primaryDataset = result.rows.map(r => r.D);
+      secondarySeries = [
+        { label: 'R1 订货速度', key: 'R1' },
+        { label: 'X 库存差额', key: 'X' }
+      ];
+      dom.primaryChartLabel.textContent = '库存量 D';
+      dom.secondaryChartLabel.textContent = '订货速度 / 库存差额';
+    } else {
+      primaryDataset = result.rows.map(r => r.Q);
+      secondarySeries = [
+        { label: 'M 在校学生', key: 'M' },
+        { label: 'R1 招生率', key: 'R1' },
+        { label: 'R2 毕业率', key: 'R2' },
+        { label: 'D 供需差', key: 'D' }
+      ];
+      dom.primaryChartLabel.textContent = '人才拥有量 Q';
+      dom.secondaryChartLabel.textContent = 'M / R1 / R2 / D';
+    }
+
+    state.primaryChart = new Chart(dom.primaryChartCanvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: `${model.primaryVar} 主变量`,
+            data: primaryDataset,
+            borderWidth: 3,
+            tension: 0.28,
+            fill: false
+          },
+          pointDataset('当前播放点', row0[result.primaryKey], state.playbackIndex, '#ef4444')
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: true } }
+      }
+    });
+
+    const secondaryDatasets = secondarySeries.map(series => ({
+      label: series.label,
+      data: result.rows.map(r => r[series.key]),
+      borderWidth: 2,
+      tension: 0.25,
+      fill: false
+    }));
+
+    secondarySeries.forEach(series => {
+      secondaryDatasets.push(pointDataset(`${series.label} 当前点`, row0[series.key], state.playbackIndex, '#f59e0b'));
+    });
+
+    state.secondaryChart = new Chart(dom.secondaryChartCanvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: secondaryDatasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: { legend: { display: true } }
+      }
+    });
+  }
+
+  function updateChartPlaybackMarker() {
+    if (!state.result || !state.primaryChart || !state.secondaryChart) return;
+    const row = state.result.rows[state.playbackIndex];
+    state.primaryChart.data.datasets[1].data =
+      state.result.rows.map((_, i) => (i === state.playbackIndex ? row[state.result.primaryKey] : null));
+    state.primaryChart.update('none');
+
+    const secondaryKeys = currentModel().id === 'positive_feedback'
+      ? ['R1']
+      : currentModel().id === 'negative_feedback'
+        ? ['R1', 'X']
+        : ['M', 'R1', 'R2', 'D'];
+
+    secondaryKeys.forEach((key, idx) => {
+      const dsIndex = secondaryKeys.length + idx;
+      state.secondaryChart.data.datasets[dsIndex].data =
+        state.result.rows.map((_, i) => (i === state.playbackIndex ? row[key] : null));
+    });
+    state.secondaryChart.update('none');
+  }
+
+  function renderSnapshot() {
+    if (!state.result) return;
+    const model = currentModel();
+    const row = state.result.rows[state.playbackIndex];
+    const keys = Object.keys(row).filter(k => k !== 't');
+
+    dom.snapshotCard.innerHTML = `
+      <div class="snapshot-head">
+        <h3>当前播放截面</h3>
+        <span class="mini-chip">${model.timeLabel}：${row.t}</span>
+      </div>
+      <div class="snapshot-grid-inner">
+        ${keys.map(key => `
+          <div class="snapshot-item">
+            <div class="snapshot-key">${key}</div>
+            <div class="snapshot-value">${fmt(row[key], 4)}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function updatePlaybackUI() {
+    if (!state.result) return;
+    dom.playbackRange.max = state.result.rows.length - 1;
+    dom.playbackRange.value = state.playbackIndex;
+    dom.playbackStepLabel.textContent = `当前步：${state.playbackIndex}`;
+    dom.playbackMaxLabel.textContent = `末期时刻：${state.result.rows.length - 1}`;
+    renderSnapshot();
+    highlightCurrentRow();
+    updateChartPlaybackMarker();
+  }
+
+  function stopPlayback() {
+    if (state.playTimer) {
+      clearInterval(state.playTimer);
+      state.playTimer = null;
+    }
+  }
+
+  function startPlayback() {
+    stopPlayback();
+    state.playTimer = setInterval(() => {
+      if (!state.result) return;
+      if (state.playbackIndex >= state.result.rows.length - 1) {
+        stopPlayback();
+        return;
+      }
+      state.playbackIndex += 1;
+      updatePlaybackUI();
+    }, 650);
+  }
+
+  function bindPlayback() {
+    dom.playBtn.addEventListener('click', startPlayback);
+    dom.pauseBtn.addEventListener('click', stopPlayback);
+    dom.replayBtn.addEventListener('click', () => {
+      stopPlayback();
+      state.playbackIndex = 0;
+      updatePlaybackUI();
+    });
+    dom.playbackRange.addEventListener('input', () => {
+      stopPlayback();
+      state.playbackIndex = Number(dom.playbackRange.value);
+      updatePlaybackUI();
+    });
   }
 
   function createSvgDiagram(diagram) {
@@ -643,9 +736,8 @@
     if (link.type === 'flow') {
       return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="4" marker-end="url(#arrowFlow)"/>`;
     }
-
     if (link.type === 'flowInvisible') {
-      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="4" marker-end="url(#arrowFlow)" opacity="0.8"/>`;
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="4" marker-end="url(#arrowFlow)" opacity="0.82"/>`;
     }
 
     const bend = link.bend ?? 0;
@@ -662,9 +754,12 @@
   }
 
   function buildNode(node) {
+    const title = `<title>${node.hint || node.label}</title>`;
+
     if (node.type === 'stock') {
       return `
         <g filter="url(#softShadow)">
+          ${title}
           <rect x="${node.x - 55}" y="${node.y - 28}" width="110" height="56" rx="14"
                 fill="#e8f0ff" stroke="#7aa2ff" stroke-width="2"/>
           ${multiLineText(node.label, node.x, node.y - 4, '#183b72', true)}
@@ -675,6 +770,7 @@
     if (node.type === 'aux') {
       return `
         <g filter="url(#softShadow)">
+          ${title}
           <circle cx="${node.x}" cy="${node.y}" r="34" fill="#eef7ff" stroke="#8acdb4" stroke-width="2"/>
           ${multiLineText(node.label, node.x, node.y - 4, '#224d65', true)}
         </g>
@@ -684,6 +780,7 @@
     if (node.type === 'valve') {
       return `
         <g>
+          ${title}
           <polygon points="${node.x-14},${node.y} ${node.x},${node.y-14} ${node.x+14},${node.y} ${node.x},${node.y+14}"
                    fill="#334155"/>
           <text x="${node.x}" y="${node.y - 22}" text-anchor="middle" font-size="14" font-weight="800" fill="#334155">${node.label}</text>
@@ -693,6 +790,7 @@
 
     return `
       <g>
+        ${title}
         <path d="M ${node.x-25} ${node.y} C ${node.x-40} ${node.y-20}, ${node.x-8} ${node.y-34}, ${node.x+8} ${node.y-16}
                  C ${node.x+32} ${node.y-18}, ${node.x+36} ${node.y+16}, ${node.x+12} ${node.y+24}
                  C ${node.x-2} ${node.y+40}, ${node.x-38} ${node.y+22}, ${node.x-25} ${node.y}"
@@ -722,8 +820,7 @@
   }
 
   function renderDiagram() {
-    const model = currentModel();
-    dom.diagramContainer.innerHTML = createSvgDiagram(model.diagram);
+    dom.diagramContainer.innerHTML = createSvgDiagram(currentModel().diagram);
     resetDiagramTransform();
   }
 
@@ -766,16 +863,18 @@
     const model = currentModel();
     const params = deepClone(getParams());
     state.result = simulate(model, params);
+    state.playbackIndex = 0;
 
     buildSmartTip(state.result);
     buildInsightBanner(state.result);
     renderEquations();
     renderKPIs(state.result);
-    renderCharts(state.result);
     renderTable(state.result);
+    renderCharts(state.result);
     renderDiagram();
     renderSteps();
     renderCode();
+    updatePlaybackUI();
 
     if (window.MathJax?.typesetPromise) {
       window.MathJax.typesetPromise().catch(() => {});
@@ -783,6 +882,7 @@
   }
 
   function rerenderAll() {
+    setTheme();
     renderModelSwitcher();
     renderMeta();
     renderParamForm();
@@ -791,17 +891,25 @@
   }
 
   function bindActions() {
-    dom.runBtn.addEventListener('click', () => renderResult());
+    dom.runBtn.addEventListener('click', () => {
+      stopPlayback();
+      renderResult();
+    });
+
     dom.resetBtn.addEventListener('click', () => {
-      resetParamsForModel();
+      stopPlayback();
+      const model = currentModel();
+      model.params.forEach(p => state.params[model.id][p.key] = p.value);
       rerenderAll();
     });
+
     dom.exportBtn.addEventListener('click', exportCsv);
   }
 
   initState();
   bindTabs();
   bindActions();
+  bindPlayback();
   bindDiagramInteraction();
   rerenderAll();
 })();
