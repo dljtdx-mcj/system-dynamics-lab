@@ -66,7 +66,18 @@ body::-webkit-scrollbar-thumb {
 }
 body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
 
-/* 加宽外层容器，让布局完美铺满屏幕 */
+/* SVG Icon 通用样式 */
+.icon {
+  width: 1.25em;
+  height: 1.25em;
+  vertical-align: -0.2em;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.text-primary {
+  color: var(--primary);
+}
+
 .page-shell {
   max-width: 1680px;
   width: 96%;
@@ -96,7 +107,6 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
 .orb-b { width: 320px; height: 320px; background: var(--hero-grad-b); right: -120px; top: -60px; }
 .orb-c { width: 220px; height: 220px; background: rgba(16,185,129,0.10); left: 45%; bottom: -120px; }
 
-/* 居中头部容器 */
 .hero-centered {
   position: relative;
   z-index: 2;
@@ -132,6 +142,7 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
 
 .hero-tag {
   display: inline-flex;
+  align-items: center;
   padding: 10px 16px;
   border-radius: 999px;
   background: rgba(20,33,61,0.05);
@@ -139,6 +150,7 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   font-weight: 800;
   margin-bottom: 18px;
 }
+
 .hero-centered h1 {
   margin: 0;
   font-size: clamp(38px, 5vw, 72px);
@@ -146,8 +158,24 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   font-weight: 900;
   letter-spacing: -1px;
 }
+
+/* 居中放置的作者样式 */
+.hero-author {
+  display: inline-flex;
+  align-items: center;
+  margin: 22px 0 0 0;
+  padding: 8px 24px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(82, 110, 180, 0.2);
+  border-radius: 999px;
+  color: #4a5c7d;
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: 0 6px 16px rgba(47,74,124,0.06);
+}
+
 .hero-subtitle {
-  margin: 18px 0 0;
+  margin: 22px 0 0;
   font-size: clamp(17px, 2vw, 20px);
   color: var(--muted);
   line-height: 1.85;
@@ -160,6 +188,8 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   margin-top: 24px;
 }
 .hero-badges span {
+  display: inline-flex;
+  align-items: center;
   padding: 13px 20px;
   border-radius: 999px;
   background: rgba(255,255,255,0.90);
@@ -174,7 +204,7 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   top: 10px;
   z-index: 20;
   display: flex;
-  justify-content: center; /* Tab居中 */
+  justify-content: center;
   flex-wrap: wrap;
   gap: 14px;
   margin-bottom: 18px;
@@ -186,6 +216,8 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   box-shadow: var(--shadow-soft);
 }
 .top-tab {
+  display: inline-flex;
+  align-items: center;
   border: 1px solid rgba(255,255,255,0.65);
   background: rgba(255,255,255,0.84);
   border-radius: 18px;
@@ -234,6 +266,8 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   border-color: var(--theme-ring);
 }
 .model-card-btn h3 {
+  display: flex;
+  align-items: center;
   margin: 0 0 8px;
   font-size: 21px;
 }
@@ -254,7 +288,6 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
   font-weight: 800;
 }
 
-/* 控制台变窄 340px，让右侧图表区域获得极大展示空间 */
 .layout-grid {
   display: grid;
   grid-template-columns: 340px 1fr;
@@ -281,6 +314,8 @@ body::-webkit-scrollbar-track { background: rgba(255,255,255,0.35); }
 }
 
 .panel-head h2 {
+  display: flex;
+  align-items: center;
   margin: 0 0 8px;
   font-size: 23px;
 }
@@ -384,6 +419,9 @@ input[type="range"] {
 .ghost-btn,
 .tiny-outline-btn,
 .mini-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-weight: 900;
   transition: .22s;
@@ -415,6 +453,8 @@ input[type="range"] {
 }
 .playback-head h3,
 .snapshot-head h3 {
+  display: flex;
+  align-items: center;
   margin: 0;
   font-size: 18px;
 }
@@ -500,7 +540,7 @@ input[type="range"] {
   align-items: start;
   margin-bottom: 16px;
 }
-.two-col-header h2 { margin: 0 0 8px; font-size: 24px; }
+.two-col-header h2 { display: flex; align-items: center; margin: 0 0 8px; font-size: 24px; }
 .two-col-header p { margin: 0; color: var(--muted); line-height: 1.7; }
 .status-chip {
   padding: 11px 16px;
