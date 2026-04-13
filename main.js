@@ -181,7 +181,6 @@
       </div>
     `).join('');
 
-    // 绑定事件：拖动滑块或者输入数字时，自动计算并刷新图表和数据
     [...dom.paramForm.querySelectorAll('input')].forEach(input => {
       input.addEventListener('input', () => {
         const key = input.dataset.key;
@@ -193,9 +192,7 @@
         });
 
         stopPlayback();
-        // 仅局部刷新：图表和数据（避免公式闪烁）
         renderResult();
-        // 顺便让分析对比页也跟着实时联动
         renderAnalysis();
       });
     });
@@ -283,13 +280,13 @@
 
     if (model.id === 'positive_feedback') {
       const ratio = last.L1 / first.L1;
-      text = `智能提示：当前参数下，客运量从 ${fmt(first.L1, 2)} 增长到 ${fmt(last.L1, 2)}，放大倍数约 ${fmt(ratio, 2)}。若继续增大增长率 C1 或步长 DT，指数增长会更明显。`;
+      text = `智能提示：当前参数下，水准变量 L1 从 ${fmt(first.L1, 2)} 增长到 ${fmt(last.L1, 2)}，放大倍数约 ${fmt(ratio, 2)}。若继续增大常量 C1 或步长 DT，指数增长会更明显。`;
     } else if (model.id === 'negative_feedback') {
       const gapAbs = Math.abs(last.X);
-      text = `智能提示：系统末期库存为 ${fmt(last.D, 2)}，距离目标库存的偏差约 ${fmt(gapAbs, 2)}。若希望更快收敛，可减小调整时间 W；过小会使响应更激进。`;
+      text = `智能提示：系统末期水准变量 D 为 ${fmt(last.D, 2)}，距离目标库存的偏差约 ${fmt(gapAbs, 2)}。若希望更快收敛，可减小常量 W；过小会使响应更激进。`;
     } else {
       const diff = Math.abs(last.D);
-      text = `智能提示：系统末期人才拥有量为 ${fmt(last.Q, 2)}，供需差约 ${fmt(diff, 2)}。较小的 Z 会强化招生响应，较小的 W 会加快毕业转化，更容易出现超调。`;
+      text = `智能提示：系统末期水准变量 Q 为 ${fmt(last.Q, 2)}，供需差 D 约 ${fmt(diff, 2)}。较小的 Z 会强化招生响应，较小的 W 会加快毕业转化，更容易出现超调。`;
     }
     dom.smartTip.textContent = text;
   }
@@ -302,11 +299,11 @@
     let html = '';
 
     if (model.id === 'positive_feedback') {
-      html = `当前系统呈现 <strong>单库存正反馈放大</strong>：主变量 <strong>${model.primaryVar}</strong> 从 <strong>${fmt(first.L1, 2)}</strong> 增长到 <strong>${fmt(last.L1, 2)}</strong>，增长流量随库存同步放大。`;
+      html = `当前系统呈现 <strong>单水准变量正反馈放大</strong>：水准变量 <strong>${model.primaryVar}</strong> 从 <strong>${fmt(first.L1, 2)}</strong> 增长到 <strong>${fmt(last.L1, 2)}</strong>，速率变量随水准变量同步放大。`;
     } else if (model.id === 'negative_feedback') {
-      html = `当前系统呈现 <strong>目标驱动型负反馈收敛</strong>：库存 <strong>D</strong> 从 <strong>${fmt(first.D, 2)}</strong> 逐步逼近目标值 <strong>${fmt(getParams().Y, 2)}</strong>。`;
+      html = `当前系统呈现 <strong>一阶负反馈收敛</strong>：水准变量 <strong>D</strong> 从 <strong>${fmt(first.D, 2)}</strong> 逐步逼近常量目标值 <strong>${fmt(getParams().Y, 2)}</strong>。`;
     } else {
-      html = `当前系统呈现 <strong>二阶耦合负反馈</strong>：在校学生与人才拥有量双库存联动，常伴随 <strong>超调 + 调整 + 逐步收敛</strong> 的过程。`;
+      html = `当前系统呈现 <strong>二阶负反馈耦合</strong>：两个水准变量 <strong>M</strong> 与 <strong>Q</strong> 通过速率变量 <strong>R1</strong>、<strong>R2</strong> 联动演化，常伴随 <strong>超调 + 调整 + 逐步收敛</strong> 的过程。`;
     }
     dom.insightBanner.innerHTML = html;
   }
@@ -330,24 +327,24 @@
 
     if (model.id === 'positive_feedback') {
       kpis = [
-        ['初始主变量', fmt(first.L1, 2)],
-        ['末期主变量', fmt(last.L1, 2)],
-        ['末期增长流量', fmt(last.R1, 2)],
+        ['初始水准变量', fmt(first.L1, 2)],
+        ['末期水准变量', fmt(last.L1, 2)],
+        ['末期速率变量', fmt(last.R1, 2)],
         ['放大倍数', fmt(last.L1 / first.L1, 2)]
       ];
     } else if (model.id === 'negative_feedback') {
       kpis = [
-        ['初始库存', fmt(first.D, 2)],
-        ['末期库存', fmt(last.D, 2)],
-        ['末期差额', fmt(last.X, 2)],
-        ['末期订货速度', fmt(last.R1, 2)]
+        ['初始水准变量 D', fmt(first.D, 2)],
+        ['末期水准变量 D', fmt(last.D, 2)],
+        ['末期辅助变量 X', fmt(last.X, 2)],
+        ['末期速率变量 R1', fmt(last.R1, 2)]
       ];
     } else {
       kpis = [
-        ['末期人才量 Q', fmt(last.Q, 2)],
-        ['末期在校学生 M', fmt(last.M, 2)],
-        ['末期供需差 D', fmt(last.D, 2)],
-        ['末期毕业率 R2', fmt(last.R2, 2)]
+        ['末期水准变量 Q', fmt(last.Q, 2)],
+        ['末期水准变量 M', fmt(last.M, 2)],
+        ['末期辅助变量 D', fmt(last.D, 2)],
+        ['末期速率变量 R2', fmt(last.R2, 2)]
       ];
     }
 
@@ -414,11 +411,11 @@
         <h4>本环节关键点</h4>
         ${step.bullets?.length
           ? `<ul>${step.bullets.map(b => `<li>${b}</li>`).join('')}</ul>`
-          : `<p>这一环节主要将变量关系转化为可计算的离散迭代逻辑。</p>`}
+          : `<p>这一环节主要将系统结构转化为符合教材 DYNAMO 规范的离散计算逻辑。</p>`}
       </div>
       <div class="step-block">
         <h4>课堂演示建议</h4>
-        <p>建议将当前页面与主响应曲线同步展示，先解释变量，再解释方程，最后解释每一步如何更新与为何产生当前动态行为。</p>
+        <p>建议将当前页面与主响应曲线同步展示，先说明水准变量、速率变量和辅助变量的含义，再说明方程组，最后解释系统为何表现出当前动态特征。</p>
       </div>
     `;
   }
@@ -535,7 +532,7 @@
 
     const model = currentModel();
     const labels = result.time;
-    // 保护：如果总步数因参数变小导致 playbackIndex 越界，取末尾
+
     if (state.playbackIndex >= result.rows.length) {
       state.playbackIndex = result.rows.length - 1;
     }
@@ -546,17 +543,17 @@
 
     if (model.id === 'positive_feedback') {
       primaryDataset = result.rows.map(r => r.L1);
-      secondarySeries = [{ label: 'R1 年增加量', key: 'R1' }];
-      dom.primaryChartLabel.textContent = '客运量 L1';
-      dom.secondaryChartLabel.textContent = '年增加量 R1';
+      secondarySeries = [{ label: 'R1 客运量年增加量', key: 'R1' }];
+      dom.primaryChartLabel.textContent = '水准变量 L1';
+      dom.secondaryChartLabel.textContent = '速率变量 R1';
     } else if (model.id === 'negative_feedback') {
       primaryDataset = result.rows.map(r => r.D);
       secondarySeries = [
         { label: 'R1 订货速度', key: 'R1' },
         { label: 'X 库存差额', key: 'X' }
       ];
-      dom.primaryChartLabel.textContent = '库存量 D';
-      dom.secondaryChartLabel.textContent = '订货速度 / 库存差额';
+      dom.primaryChartLabel.textContent = '水准变量 D';
+      dom.secondaryChartLabel.textContent = '速率变量 / 辅助变量';
     } else {
       primaryDataset = result.rows.map(r => r.Q);
       secondarySeries = [
@@ -565,7 +562,7 @@
         { label: 'R2 毕业率', key: 'R2' },
         { label: 'D 供需差', key: 'D' }
       ];
-      dom.primaryChartLabel.textContent = '人才拥有量 Q';
+      dom.primaryChartLabel.textContent = '水准变量 Q';
       dom.secondaryChartLabel.textContent = 'M / R1 / R2 / D';
     }
 
@@ -589,7 +586,7 @@
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: { legend: { display: true } },
-        animation: { duration: 0 } // 拖动滑块时禁用动画，让响应更丝滑
+        animation: { duration: 0 }
       }
     });
 
@@ -616,7 +613,7 @@
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
         plugins: { legend: { display: true } },
-        animation: { duration: 0 } // 拖动滑块时禁用动画
+        animation: { duration: 0 }
       }
     });
   }
@@ -874,7 +871,6 @@
     dom.diagramResetBtn.addEventListener('click', resetDiagramTransform);
   }
 
-  // 1. 局部渲染：只渲染会被参数滑块影响的图表和数据（拖动滑块时调这个，公式不会闪）
   function renderResult() {
     const model = currentModel();
     const params = deepClone(getParams());
@@ -888,22 +884,19 @@
     updatePlaybackUI();
   }
 
-  // 2. 整体渲染：切换模型、重置、初次加载时使用
   function rerenderAll() {
     setTheme();
     renderModelSwitcher();
     renderMeta();
     renderParamForm();
-    
-    // 不随滑块实时变动的内容
+
     renderEquations();
     renderDiagram();
     renderSteps();
     renderCode();
-    
-    // 初始化计算图表
+
     state.playbackIndex = 0;
-    renderResult(); 
+    renderResult();
     renderAnalysis();
 
     if (window.MathJax?.typesetPromise) {
@@ -916,7 +909,7 @@
       stopPlayback();
       const model = currentModel();
       model.params.forEach(p => state.params[model.id][p.key] = p.value);
-      rerenderAll(); // 重置所有
+      rerenderAll();
     });
 
     dom.exportBtn.addEventListener('click', exportCsv);
