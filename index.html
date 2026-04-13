@@ -3,774 +3,67 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>系统动力学仿真计算全景交互系统</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <title>系统动力学仿真计算全景交互系统｜课程设计版</title>
+  <meta name="description" content="系统动力学仿真计算全景交互系统，涵盖一阶正反馈、一阶负反馈、二阶负反馈，支持参数联动、流程图缩放拖拽、图表分析、步骤讲解与源码展示。">
+  <link rel="stylesheet" href="./style.css" />
   <script>
     window.MathJax = {
       tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] },
       svg: { fontCache: 'global' }
     };
   </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
   <script defer src="./data.js"></script>
   <script defer src="./main.js"></script>
-
-  <style>
-    :root {
-      --bg: #eef4ff;
-      --bg2: #f8fbff;
-      --card: rgba(255,255,255,0.78);
-      --card-strong: rgba(255,255,255,0.92);
-      --line: rgba(82, 110, 180, 0.16);
-      --text: #14213d;
-      --muted: #60708c;
-      --primary: #3b82f6;
-      --primary-2: #4f46e5;
-      --accent: #10b981;
-      --warn: #f59e0b;
-      --shadow: 0 20px 60px rgba(25, 55, 110, 0.12);
-      --radius: 24px;
-      --radius-sm: 14px;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; }
-    body {
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at 10% 10%, rgba(59,130,246,0.14), transparent 28%),
-        radial-gradient(circle at 90% 20%, rgba(79,70,229,0.12), transparent 24%),
-        linear-gradient(180deg, #edf4ff 0%, #f7fbff 100%);
-      min-height: 100vh;
-    }
-
-    .page-shell {
-      max-width: 1480px;
-      margin: 0 auto;
-      padding: 22px;
-    }
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.65);
-      background: linear-gradient(135deg, rgba(255,255,255,0.86), rgba(245,249,255,0.92));
-      border-radius: 34px;
-      padding: 34px 32px 28px;
-      box-shadow: var(--shadow);
-      margin-bottom: 18px;
-    }
-
-    .hero-glow {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(40px);
-      opacity: .55;
-      pointer-events: none;
-    }
-    .hero-glow-a {
-      width: 260px; height: 260px;
-      background: rgba(59,130,246,0.15);
-      top: -90px; left: -60px;
-    }
-    .hero-glow-b {
-      width: 320px; height: 320px;
-      background: rgba(16,185,129,0.10);
-      right: -120px; top: -80px;
-    }
-
-    .hero-content { position: relative; z-index: 2; }
-    .hero-tag {
-      display: inline-flex;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: rgba(59,130,246,0.10);
-      color: #2457d7;
-      font-weight: 700;
-      letter-spacing: .4px;
-      margin-bottom: 18px;
-      border: 1px solid rgba(59,130,246,0.12);
-    }
-    .hero h1 {
-      margin: 0;
-      font-size: clamp(36px, 5vw, 72px);
-      line-height: 1.02;
-      font-weight: 900;
-      letter-spacing: -1px;
-    }
-    .hero-subtitle {
-      margin: 18px 0 0;
-      font-size: clamp(17px, 2vw, 20px);
-      color: var(--muted);
-      max-width: 1180px;
-      line-height: 1.8;
-    }
-    .hero-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 24px;
-    }
-    .hero-badges span {
-      padding: 14px 22px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.86);
-      border: 1px solid var(--line);
-      font-size: 16px;
-      font-weight: 700;
-      box-shadow: 0 10px 24px rgba(62,95,150,0.08);
-    }
-    .hero-author {
-      margin-top: 16px;
-      color: #7b8ba7;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .top-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .top-tab {
-      border: 1px solid rgba(255,255,255,0.65);
-      background: rgba(255,255,255,0.78);
-      border-radius: 18px;
-      padding: 18px 26px;
-      font-size: 16px;
-      font-weight: 800;
-      color: #55657f;
-      cursor: pointer;
-      transition: .25s;
-      box-shadow: 0 12px 28px rgba(47,74,124,0.08);
-    }
-    .top-tab:hover {
-      transform: translateY(-1px);
-      color: var(--text);
-    }
-    .top-tab.active {
-      color: #2353da;
-      border-color: rgba(59,130,246,0.20);
-      box-shadow: 0 18px 34px rgba(59,130,246,0.10);
-      outline: 3px solid rgba(59,130,246,0.08);
-    }
-
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    .model-switcher {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    .model-card-btn {
-      padding: 18px 18px 16px;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,0.75);
-      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(248,251,255,0.9));
-      box-shadow: 0 14px 38px rgba(42,72,122,0.08);
-      cursor: pointer;
-      text-align: left;
-      transition: .22s;
-    }
-    .model-card-btn:hover { transform: translateY(-2px); }
-    .model-card-btn.active {
-      background: linear-gradient(135deg, rgba(59,130,246,0.10), rgba(79,70,229,0.08), rgba(255,255,255,0.94));
-      outline: 3px solid rgba(59,130,246,0.08);
-      border-color: rgba(59,130,246,0.18);
-    }
-    .model-card-btn h3 {
-      margin: 0 0 8px;
-      font-size: 21px;
-    }
-    .model-card-btn p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 14px;
-    }
-    .model-card-meta {
-      margin-top: 12px;
-      display: inline-flex;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(59,130,246,0.08);
-      color: #2563eb;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .layout-grid {
-      display: grid;
-      grid-template-columns: 420px 1fr;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .panel {
-      border: 1px solid rgba(255,255,255,0.76);
-      background: var(--card);
-      backdrop-filter: blur(14px);
-      border-radius: 30px;
-      box-shadow: var(--shadow);
-    }
-
-    .control-panel,
-    .main-panel,
-    .tutorial-panel,
-    .source-panel,
-    .overview-panel,
-    .compare-chart-panel {
-      padding: 22px;
-    }
-
-    .panel-head h2 {
-      margin: 0 0 8px;
-      font-size: 22px;
-    }
-    .panel-head p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.75;
-    }
-
-    .model-meta-card,
-    .preset-row,
-    .smart-tip,
-    .insight-banner,
-    .legend-note {
-      margin-top: 18px;
-    }
-
-    .model-meta-card {
-      padding: 16px 18px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(59,130,246,0.07), rgba(16,185,129,0.05));
-      border: 1px solid rgba(59,130,246,0.10);
-    }
-    .model-meta-card h3 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-    .model-meta-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.75;
-    }
-
-    .preset-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .preset-chip {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.86);
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 13px;
-      font-weight: 800;
-      color: #5f6e8d;
-    }
-
-    .param-form { margin-top: 16px; display: grid; gap: 14px; }
-
-    .param-item {
-      padding: 14px 14px 12px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.72);
-    }
-    .param-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .param-label {
-      font-weight: 800;
-      font-size: 15px;
-    }
-    .param-desc {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-    .param-value-wrap {
-      min-width: 102px;
-    }
-    .param-number {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.95);
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    input[type="range"] {
-      width: 100%;
-      accent-color: #3b82f6;
-      cursor: pointer;
-    }
-    .param-range-meta {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 6px;
-      font-size: 12px;
-      color: #7183a3;
-    }
-
-    .control-actions {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .primary-btn,
-    .ghost-btn,
-    .tiny-outline-btn {
-      cursor: pointer;
-      font-weight: 800;
-      border: none;
-      transition: .22s;
-    }
-    .primary-btn {
-      padding: 16px 18px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #2563eb, #4f46e5);
-      color: #fff;
-      box-shadow: 0 18px 30px rgba(59,130,246,0.20);
-      font-size: 16px;
-    }
-    .primary-btn:hover { transform: translateY(-1px); }
-    .ghost-btn {
-      padding: 16px 18px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.82);
-      color: var(--text);
-      border: 1px solid var(--line);
-      font-size: 15px;
-    }
-    .ghost-btn:hover {
-      background: rgba(255,255,255,0.95);
-    }
-
-    .smart-tip {
-      padding: 16px 18px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.05));
-      border: 1px solid rgba(16,185,129,0.12);
-      color: #235d4c;
-      line-height: 1.7;
-      font-weight: 700;
-    }
-
-    .two-col-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: start;
-      margin-bottom: 16px;
-    }
-    .two-col-header h2 { margin: 0 0 8px; font-size: 24px; }
-    .two-col-header p { margin: 0; color: var(--muted); line-height: 1.7; }
-
-    .status-chip,
-    .tiny-pill,
-    .code-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      font-weight: 800;
-    }
-    .status-chip {
-      padding: 11px 16px;
-      background: rgba(59,130,246,0.10);
-      color: #1f5ce3;
-      white-space: nowrap;
-      border: 1px solid rgba(59,130,246,0.10);
-    }
-
-    .model-visual-grid {
-      display: grid;
-      grid-template-columns: 1.08fr .92fr;
-      gap: 18px;
-    }
-
-    .diagram-card,
-    .equation-card,
-    .chart-card,
-    .table-card,
-    .legend-card,
-    .step-main-card {
-      border-radius: 24px;
-      border: 1px solid var(--line);
-      background: var(--card-strong);
-      box-shadow: 0 12px 30px rgba(52,84,136,0.06);
-    }
-
-    .diagram-card,
-    .equation-card,
-    .chart-card,
-    .table-card {
-      padding: 18px;
-    }
-
-    .section-title-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .section-title-row h3 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .title-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .tiny-pill {
-      padding: 8px 12px;
-      font-size: 12px;
-      color: #3366e8;
-      background: rgba(59,130,246,0.08);
-      border: 1px solid rgba(59,130,246,0.08);
-    }
-    .tiny-outline-btn {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.92);
-      color: #3356a8;
-      border: 1px solid rgba(59,130,246,0.14);
-      font-size: 12px;
-    }
-    .diagram-hint {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
-    .diagram-stage {
-      min-height: 540px;
-      height: 540px;
-      border-radius: 24px;
-      border: 1px dashed rgba(82, 110, 180, 0.18);
-      background:
-        linear-gradient(180deg, rgba(243,247,255,0.86), rgba(247,250,255,0.96));
-      overflow: hidden;
-      position: relative;
-      cursor: grab;
-    }
-    .diagram-stage.dragging { cursor: grabbing; }
-    .diagram-container {
-      width: 100%;
-      height: 100%;
-      transform-origin: 0 0;
-      user-select: none;
-    }
-
-    .equation-list {
-      display: grid;
-      gap: 12px;
-      align-content: start;
-    }
-    .equation-item {
-      padding: 14px 16px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(250,252,255,0.94);
-    }
-    .equation-item-title {
-      font-size: 13px;
-      font-weight: 800;
-      color: #64759a;
-      margin-bottom: 10px;
-    }
-
-    .insight-banner {
-      padding: 18px 20px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(59,130,246,0.08));
-      border: 1px solid rgba(16,185,129,0.10);
-      margin-top: 18px;
-      line-height: 1.8;
-      font-weight: 700;
-      color: #22584d;
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 18px;
-      margin-bottom: 18px;
-    }
-    .kpi-card {
-      padding: 18px;
-      border-radius: 20px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,251,255,0.86));
-      border: 1px solid var(--line);
-      box-shadow: 0 12px 24px rgba(49,82,136,0.06);
-    }
-    .kpi-label {
-      color: #6b7b97;
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .kpi-value {
-      margin-top: 10px;
-      font-size: 28px;
-      font-weight: 900;
-      color: #102347;
-    }
-
-    .chart-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .chart-card canvas,
-    .compare-chart-panel canvas {
-      width: 100% !important;
-      height: 320px !important;
-    }
-
-    .table-card { margin-top: 18px; }
-    .table-wrap {
-      overflow: auto;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: #fff;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 820px;
-    }
-    th, td {
-      border-bottom: 1px solid rgba(82, 110, 180, 0.10);
-      padding: 12px 14px;
-      text-align: center;
-      font-size: 14px;
-    }
-    th {
-      background: #f4f8ff;
-      font-weight: 900;
-      color: #29406e;
-      position: sticky;
-      top: 0;
-    }
-
-    .process-strip {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 18px 0;
-    }
-    .process-btn {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.85);
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 900;
-      cursor: pointer;
-      color: #40506d;
-      transition: .2s;
-    }
-    .process-btn.active {
-      background: linear-gradient(135deg, #2f67ef, #4f46e5);
-      color: #fff;
-      box-shadow: 0 18px 32px rgba(59,130,246,0.16);
-    }
-
-    .step-layout {
-      display: grid;
-      grid-template-columns: 1.3fr .7fr;
-      gap: 18px;
-    }
-    .step-main-card,
-    .legend-card {
-      padding: 20px;
-    }
-    .step-headline h3 {
-      margin: 0 0 10px;
-      font-size: 28px;
-    }
-    .step-headline p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-    .step-explainer {
-      margin-top: 18px;
-      display: grid;
-      gap: 14px;
-    }
-    .step-block {
-      padding: 16px 18px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(249,252,255,0.95), rgba(255,255,255,0.92));
-    }
-    .step-block h4 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-    .step-block p,
-    .step-block li {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-    .step-block ul { padding-left: 20px; margin: 8px 0 0; }
-
-    .legend-card h3 { margin-top: 0; }
-    .legend-card ul {
-      margin: 10px 0 0;
-      padding-left: 20px;
-      color: var(--muted);
-      line-height: 1.9;
-    }
-    .legend-note {
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: rgba(245,186,34,0.10);
-      color: #77560c;
-      border: 1px solid rgba(245,186,34,0.14);
-      line-height: 1.7;
-      font-weight: 700;
-    }
-
-    .code-toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-      margin-bottom: 14px;
-    }
-    .code-badge {
-      padding: 9px 14px;
-      font-size: 12px;
-      background: rgba(59,130,246,0.08);
-      color: #285ce0;
-      border: 1px solid rgba(59,130,246,0.08);
-    }
-    .code-badge.subtle {
-      background: rgba(255,255,255,0.92);
-      color: #64748b;
-      border: 1px solid var(--line);
-    }
-    .code-block {
-      margin: 0;
-      padding: 20px;
-      border-radius: 22px;
-      background: #0f172a;
-      color: #dbeafe;
-      overflow: auto;
-      min-height: 560px;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
-    }
-    code {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 14px;
-      line-height: 1.75;
-      white-space: pre-wrap;
-    }
-
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
-    }
-    .overview-cards {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
-    .overview-card {
-      padding: 20px;
-      border-radius: 22px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(249,252,255,0.92));
-      border: 1px solid var(--line);
-      box-shadow: 0 12px 28px rgba(46,79,130,0.06);
-    }
-    .overview-card h3 { margin: 0 0 10px; font-size: 20px; }
-    .overview-card p {
-      margin: 0 0 10px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-    .overview-metric {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #4f5f7a;
-      font-weight: 800;
-    }
-
-    .page-footer {
-      text-align: center;
-      padding: 20px 10px 8px;
-      color: #7a89a2;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .mono { font-family: Consolas, Monaco, monospace; }
-
-    @media (max-width: 1180px) {
-      .layout-grid { grid-template-columns: 1fr; }
-      .model-visual-grid,
-      .chart-grid,
-      .step-layout,
-      .overview-cards { grid-template-columns: 1fr; }
-      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 760px) {
-      .page-shell { padding: 12px; }
-      .hero { padding: 24px 18px; border-radius: 24px; }
-      .top-tab { width: 100%; }
-      .model-switcher { grid-template-columns: 1fr; }
-      .kpi-grid { grid-template-columns: 1fr; }
-      .diagram-stage { height: 420px; min-height: 420px; }
-      .hero-badges span { width: 100%; justify-content: center; }
-    }
-  </style>
 </head>
-<body>
+<body data-theme="positive">
   <div class="page-shell">
     <header class="hero">
-      <div class="hero-glow hero-glow-a"></div>
-      <div class="hero-glow hero-glow-b"></div>
-      <div class="hero-content">
-        <div class="hero-tag">System Dynamics · DYNAMO · Interactive Lab</div>
-        <h1>系统动力学仿真计算全景交互系统</h1>
-        <p class="hero-subtitle">
-          基于教材 5.3 节三个经典例题构建：一阶正反馈、一阶负反馈、二阶负反馈。
-          支持参数调节、流程图可缩放拖拽、步骤化教学讲解、结果分析与源码展示。
-        </p>
-        <div class="hero-badges">
-          <span>实时参数联动</span>
-          <span>三大例题一体化</span>
-          <span>流程图可缩放拖拽</span>
-          <span>课堂演示友好</span>
-        </div>
-        <div class="hero-author">作者：交通工程学院 王晚香</div>
+      <div class="hero-orb orb-a"></div>
+      <div class="hero-orb orb-b"></div>
+      <div class="hero-orb orb-c"></div>
+
+      <div class="hero-topline">
+        <span class="hero-pill">Course Design Edition · GitHub Pages Ready</span>
+        <span class="hero-pill subtle">作者：交通工程学院 王晚香</span>
+      </div>
+
+      <div class="hero-grid">
+        <section class="hero-main">
+          <div class="hero-tag">System Dynamics · DYNAMO · Interactive Courseware</div>
+          <h1>系统动力学仿真计算<br>全景交互系统</h1>
+          <p class="hero-subtitle">
+            面向课程设计、课堂演示与汇报答辩打造的静态交互版系统动力学实验平台。
+            支持三个经典教材例题的参数联动、动态推演、步骤讲解、流程图缩放拖拽、结果分析与源码展示。
+          </p>
+
+          <div class="hero-badges">
+            <span>三大例题一体化</span>
+            <span>纯前端静态部署</span>
+            <span>流程图可缩放拖拽</span>
+            <span>步骤化教学讲解</span>
+            <span>图表联动分析</span>
+          </div>
+        </section>
+
+        <aside class="hero-side">
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">案例覆盖</div>
+            <div class="hero-stat-value">3 个</div>
+            <div class="hero-stat-note">一阶正反馈 / 一阶负反馈 / 二阶负反馈</div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">教学模块</div>
+            <div class="hero-stat-value">4 大页签</div>
+            <div class="hero-stat-note">沙盒、步骤、源码、分析</div>
+          </div>
+          <div class="hero-stat-card">
+            <div class="hero-stat-label">当前部署方式</div>
+            <div class="hero-stat-value">GitHub Pages</div>
+            <div class="hero-stat-note">无需 Flask，无需服务器</div>
+          </div>
+        </aside>
       </div>
     </header>
 
@@ -788,8 +81,8 @@
         <div class="layout-grid">
           <aside class="panel control-panel">
             <div class="panel-head">
-              <h2>全局参数控制台</h2>
-              <p>支持滑块调节、数值输入、教材参数一键恢复与实时联动仿真。</p>
+              <h2>参数控制与课堂操作区</h2>
+              <p>选择例题、调节参数、启动推演、播放离散演化过程，并导出结果表用于汇报展示。</p>
             </div>
 
             <div class="model-meta-card" id="model-meta-card"></div>
@@ -802,14 +95,32 @@
               <button class="ghost-btn" id="export-btn">导出当前结果 CSV</button>
             </div>
 
+            <div class="playback-panel">
+              <div class="playback-head">
+                <h3>离散过程播放</h3>
+                <span class="mini-chip" id="playback-step-label">当前步：0</span>
+              </div>
+              <div class="playback-controls">
+                <button class="mini-btn" id="play-btn">播放</button>
+                <button class="mini-btn" id="pause-btn">暂停</button>
+                <button class="mini-btn" id="replay-btn">重置</button>
+              </div>
+              <input id="playback-range" type="range" min="0" max="0" value="0" step="1" />
+              <div class="playback-meta">
+                <span>初始时刻</span>
+                <span id="playback-max-label">末期时刻</span>
+              </div>
+            </div>
+
             <div class="smart-tip" id="smart-tip"></div>
+            <div class="snapshot-card" id="snapshot-card"></div>
           </aside>
 
           <section class="panel main-panel">
             <div class="two-col-header">
               <div>
-                <h2>模型结构与 DYNAMO 方程</h2>
-                <p>系统流程图、变量含义和方程结构会随着当前例题动态切换。</p>
+                <h2>模型结构、流程图与 DYNAMO 方程</h2>
+                <p>当前例题的流程图、变量含义、方程系统与动态响应会同步切换。</p>
               </div>
               <div class="status-chip" id="feedback-chip">反馈类型</div>
             </div>
@@ -823,7 +134,7 @@
                     <button class="tiny-outline-btn" id="diagram-reset-btn" type="button">复位视图</button>
                   </div>
                 </div>
-                <div class="diagram-hint">支持鼠标滚轮缩放、左键拖拽移动、双击快速复位</div>
+                <div class="diagram-hint">支持鼠标滚轮缩放、左键拖拽、双击快速复位；悬停节点可查看变量释义。</div>
                 <div class="diagram-stage" id="diagram-stage">
                   <div id="diagram-container" class="diagram-container"></div>
                 </div>
@@ -861,7 +172,7 @@
             <div class="table-card">
               <div class="section-title-row">
                 <h3>代表性仿真结果表</h3>
-                <span class="tiny-pill">支持导出完整数据</span>
+                <span class="tiny-pill">当前播放步会高亮显示</span>
               </div>
               <div class="table-wrap">
                 <table id="result-table"></table>
@@ -875,24 +186,29 @@
         <div class="panel tutorial-panel">
           <div class="panel-head">
             <h2>步骤详解</h2>
-            <p>参考教学网页的结构，但升级为更适合系统动力学教学的“机制 + 方程 + 离散迭代”一体化讲解。</p>
+            <p>将教材中的系统动力学建模过程拆解为“模型识别—方程配置—速率计算—水准更新—响应判读”五段式讲解。</p>
           </div>
+
           <div class="process-strip" id="process-strip"></div>
+
           <div class="step-layout">
             <div class="step-main-card">
               <div class="step-headline" id="step-headline"></div>
               <div class="step-explainer" id="step-explainer"></div>
             </div>
+
             <div class="legend-card">
               <h3>DYNAMO 标识速查</h3>
               <ul>
-                <li><strong>L</strong>：水准方程（Level），体现累积 / 积分过程。</li>
-                <li><strong>R</strong>：速率方程（Rate），体现流量或变化速度。</li>
-                <li><strong>A</strong>：辅助方程（Auxiliary），承载中间逻辑计算。</li>
-                <li><strong>N</strong>：赋初值方程（Initial），给库存变量设置初值。</li>
-                <li><strong>C</strong>：常量方程（Constant），提供固定参数。</li>
+                <li><strong>L</strong>：水准方程，体现库存的累积与积分。</li>
+                <li><strong>R</strong>：速率方程，体现流量、增长率或变化速度。</li>
+                <li><strong>A</strong>：辅助方程，承载中间逻辑计算。</li>
+                <li><strong>N</strong>：赋初值方程，给库存变量设置起始值。</li>
+                <li><strong>C</strong>：常量方程，表示不随时间变化的参数。</li>
               </ul>
-              <div class="legend-note">当前页面会随所选例题自动生成离散推演说明，适合课堂演示、课程设计或课程汇报。</div>
+              <div class="legend-note">
+                本页适合在答辩或汇报中作为“建模思路说明页”。建议先讲系统结构，再讲方程，再结合主响应曲线解释反馈机理。
+              </div>
             </div>
           </div>
         </div>
@@ -902,11 +218,11 @@
         <div class="panel source-panel">
           <div class="panel-head">
             <h2>核心算法源码</h2>
-            <p>展示当前例题对应的 Python 求解函数，可直接复制到课程作业、毕业设计原型或教学演示系统中。</p>
+            <p>展示当前例题的 Python 求解逻辑，同时静态站点使用 JavaScript 实现等价离散仿真，兼顾教学表达与部署便利性。</p>
           </div>
           <div class="code-toolbar">
-            <span class="code-badge" id="code-badge">solver / static mode</span>
-            <span class="code-badge subtle">GitHub Pages + 原生 JavaScript + Chart.js</span>
+            <span class="code-badge" id="code-badge">solver / course edition</span>
+            <span class="code-badge subtle">GitHub Pages + JavaScript + Chart.js + MathJax</span>
           </div>
           <pre class="code-block"><code id="code-block"></code></pre>
         </div>
@@ -917,22 +233,34 @@
           <div class="panel overview-panel">
             <div class="panel-head">
               <h2>三大例题全局结果对照</h2>
-              <p>统一用教材默认参数生成摘要，便于比较不同反馈结构在长期动态上的差异。</p>
+              <p>统一使用教材参数生成摘要，用于快速比较三类反馈结构的长期行为差异。</p>
             </div>
             <div class="overview-cards" id="overview-cards"></div>
           </div>
+
           <div class="panel compare-chart-panel">
             <div class="panel-head">
               <h2>结构对比图</h2>
-              <p>以“末期值 / 初始值”为统一指标，比较放大、收敛和耦合振荡特性。</p>
+              <p>以“主变量末期值 / 初始值”为统一指标，比较放大、收敛与耦合动态特征。</p>
             </div>
             <canvas id="compare-chart"></canvas>
+          </div>
+
+          <div class="panel report-panel" id="report-panel">
+            <div class="panel-head">
+              <h2>课程设计结论摘要</h2>
+              <p>可直接用于课程设计报告结论部分或课堂展示中的总结页。</p>
+            </div>
+            <div id="report-summary" class="report-summary"></div>
           </div>
         </div>
       </section>
     </main>
 
-    <footer class="page-footer">教学整理：交通工程学院 王晚香</footer>
+    <footer class="page-footer">
+      教学整理：交通工程学院 王晚香 · 系统动力学课程设计静态展示版
+    </footer>
   </div>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7939e04a4baf43c8b86a560f74aac60e","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
