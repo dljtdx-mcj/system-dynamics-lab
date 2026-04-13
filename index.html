@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>系统动力学仿真计算全景交互系统｜课程设计版</title>
-  <meta name="description" content="系统动力学仿真计算全景交互系统，涵盖一阶正反馈、一阶负反馈、二阶负反馈，支持参数联动、流程图缩放拖拽、图表分析、步骤讲解与源码展示。">
+  <meta name="description" content="系统动力学仿真实验平台，支持参数联动、流程图缩放拖拽、图表分析与源码展示。">
   <link rel="stylesheet" href="./style.css" />
   <script>
     window.MathJax = {
@@ -24,46 +24,27 @@
       <div class="hero-orb orb-b"></div>
       <div class="hero-orb orb-c"></div>
 
-      <div class="hero-topline">
-        <span class="hero-pill">Course Design Edition · GitHub Pages Ready</span>
-        <span class="hero-pill subtle">作者：交通工程学院 王晚香</span>
-      </div>
+      <!-- 居中布局的头部区域 -->
+      <div class="hero-centered">
+        <div class="hero-topline">
+          <span class="hero-pill">Course Design Edition · GitHub Pages Ready</span>
+          <span class="hero-pill subtle">作者：交通工程学院 王晚香</span>
+        </div>
 
-      <div class="hero-grid">
-        <section class="hero-main">
-          <div class="hero-tag">System Dynamics · DYNAMO · Interactive Courseware</div>
-          <h1>系统动力学仿真计算<br>全景交互系统</h1>
-          <p class="hero-subtitle">
-            面向课程设计、课堂演示与汇报答辩打造的静态交互版系统动力学实验平台。
-            支持三个经典教材例题的参数联动、动态推演、步骤讲解、流程图缩放拖拽、结果分析与源码展示。
-          </p>
+        <div class="hero-tag">System Dynamics · DYNAMO · Interactive Courseware</div>
+        <h1>系统动力学仿真计算<br>全景交互系统</h1>
+        <p class="hero-subtitle">
+          面向课程设计、课堂演示与汇报答辩打造的静态交互版系统动力学实验平台。
+          支持三个经典教材例题的参数联动、动态推演、步骤讲解、流程图缩放拖拽、结果分析与源码展示。
+        </p>
 
-          <div class="hero-badges">
-            <span>三大例题一体化</span>
-            <span>纯前端静态部署</span>
-            <span>流程图可缩放拖拽</span>
-            <span>步骤化教学讲解</span>
-            <span>图表联动分析</span>
-          </div>
-        </section>
-
-        <aside class="hero-side">
-          <div class="hero-stat-card">
-            <div class="hero-stat-label">案例覆盖</div>
-            <div class="hero-stat-value">3 个</div>
-            <div class="hero-stat-note">一阶正反馈 / 一阶负反馈 / 二阶负反馈</div>
-          </div>
-          <div class="hero-stat-card">
-            <div class="hero-stat-label">教学模块</div>
-            <div class="hero-stat-value">4 大页签</div>
-            <div class="hero-stat-note">沙盒、步骤、源码、分析</div>
-          </div>
-          <div class="hero-stat-card">
-            <div class="hero-stat-label">当前部署方式</div>
-            <div class="hero-stat-value">GitHub Pages</div>
-            <div class="hero-stat-note">无需 Flask，无需服务器</div>
-          </div>
-        </aside>
+        <div class="hero-badges">
+          <span>三大例题一体化</span>
+          <span>纯前端静态部署</span>
+          <span>流程图可缩放拖拽</span>
+          <span>步骤化教学讲解</span>
+          <span>图表联动分析</span>
+        </div>
       </div>
     </header>
 
@@ -82,7 +63,7 @@
           <aside class="panel control-panel">
             <div class="panel-head">
               <h2>参数控制与课堂操作区</h2>
-              <p>选择例题、调节参数、启动推演、播放离散演化过程，并导出结果表用于汇报展示。</p>
+              <p>选择例题、拖动滑块实时调节参数、播放离散演化过程，并导出结果表。</p>
             </div>
 
             <div class="model-meta-card" id="model-meta-card"></div>
@@ -90,7 +71,7 @@
             <div id="param-form" class="param-form"></div>
 
             <div class="control-actions">
-              <button class="primary-btn" id="run-btn">基于当前参数实时计算</button>
+              <!-- 去掉了“基于当前参数实时计算”按钮，改为滑块拖拽自动更新 -->
               <button class="ghost-btn" id="reset-btn">恢复教材参数</button>
               <button class="ghost-btn" id="export-btn">导出当前结果 CSV</button>
             </div>
@@ -233,7 +214,7 @@
           <div class="panel overview-panel">
             <div class="panel-head">
               <h2>三大例题全局结果对照</h2>
-              <p>统一使用教材参数生成摘要，用于快速比较三类反馈结构的长期行为差异。</p>
+              <p>动态反映当前参数下三类反馈结构的长期行为差异。</p>
             </div>
             <div class="overview-cards" id="overview-cards"></div>
           </div>
@@ -261,6 +242,5 @@
       教学整理：交通工程学院 王晚香 · 系统动力学课程设计静态展示版
     </footer>
   </div>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"7939e04a4baf43c8b86a560f74aac60e","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
