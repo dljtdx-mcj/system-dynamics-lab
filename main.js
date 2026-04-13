@@ -113,7 +113,10 @@
   function renderModelSwitcher() {
     dom.modelSwitcher.innerHTML = models.map((m, idx) => `
       <button class="model-card-btn ${idx === state.modelIndex ? 'active' : ''}" data-model-index="${idx}">
-        <h3>${m.name}</h3>
+        <h3>
+          <svg class="icon text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" /></svg>
+          ${m.name}
+        </h3>
         <p>${m.description}</p>
         <div class="model-card-meta">${m.feedbackType} · ${m.shortTag}</div>
       </button>
@@ -871,8 +874,6 @@
     dom.diagramResetBtn.addEventListener('click', resetDiagramTransform);
   }
 
-  // ===== 性能优化核心：分离计算与整体渲染 =====
-  
   // 1. 局部渲染：只渲染会被参数滑块影响的图表和数据（拖动滑块时调这个，公式不会闪）
   function renderResult() {
     const model = currentModel();
@@ -887,14 +888,14 @@
     updatePlaybackUI();
   }
 
-  // 2. 整体渲染：切换模型、重置、初次加载时使用（渲染包含 MathJax 公式等重量级 DOM）
+  // 2. 整体渲染：切换模型、重置、初次加载时使用
   function rerenderAll() {
     setTheme();
     renderModelSwitcher();
     renderMeta();
     renderParamForm();
     
-    // 以下是不需要随滑块实时变动的内容
+    // 不随滑块实时变动的内容
     renderEquations();
     renderDiagram();
     renderSteps();
@@ -905,7 +906,6 @@
     renderResult(); 
     renderAnalysis();
 
-    // 通知 MathJax 重新解析方程
     if (window.MathJax?.typesetPromise) {
       window.MathJax.typesetPromise().catch(() => {});
     }
