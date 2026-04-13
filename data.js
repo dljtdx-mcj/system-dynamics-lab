@@ -6,6 +6,7 @@ window.APP_CONFIG = {
   models: [
     {
       id: 'positive_feedback',
+      theme: 'positive',
       name: '一阶正反馈',
       shortTag: '增长系统',
       feedbackType: '正反馈',
@@ -16,9 +17,10 @@ window.APP_CONFIG = {
       secondaryVars: ['R1'],
       timeLabel: '时间（年）',
       units: '亿人次',
+      reportText: '一阶正反馈系统的核心特征是“越大越快”。库存变量本身直接放大流量，因而系统呈现指数增长，这类模型适合解释扩张型、蔓延型或自我强化型现象。',
       presets: [
         { key: '教材参数', text: 'L1(0)=38.54，C1=0.05，DT=1，步数=20' },
-        { key: '含义', text: '增长流量 R1 由当前库存 L1 直接决定' }
+        { key: '教学重点', text: '增长流量 R1 由当前库存 L1 直接决定' }
       ],
       params: [
         { key: 'L1', label: '初始客运量 L1', desc: '库存变量初值', value: 38.54, min: 1, max: 100, step: 0.01 },
@@ -76,11 +78,11 @@ window.APP_CONFIG = {
     return time, level, rate`,
       diagram: {
         nodes: [
-          { id: 'src', type: 'cloud', x: 70, y: 220, label: '源' },
-          { id: 'valve', type: 'valve', x: 200, y: 220, label: 'R1' },
-          { id: 'stock', type: 'stock', x: 360, y: 220, label: 'L1\\n客运量' },
-          { id: 'sink', type: 'cloud', x: 585, y: 220, label: '汇' },
-          { id: 'c1', type: 'aux', x: 185, y: 90, label: 'C1\\n增长率' }
+          { id: 'src', type: 'cloud', x: 70, y: 220, label: '源', hint: '系统流入端的概念化表示。' },
+          { id: 'valve', type: 'valve', x: 200, y: 220, label: 'R1', hint: '客运量年增加量，决定库存增长速度。' },
+          { id: 'stock', type: 'stock', x: 360, y: 220, label: 'L1\\n客运量', hint: '系统的核心库存量，越大则增长流量越大。' },
+          { id: 'sink', type: 'cloud', x: 585, y: 220, label: '汇', hint: '系统流出端的概念化表示。' },
+          { id: 'c1', type: 'aux', x: 185, y: 90, label: 'C1\\n增长率', hint: '决定正反馈放大速度的常量参数。' }
         ],
         links: [
           { from: 'src', to: 'valve', type: 'flow' },
@@ -94,6 +96,7 @@ window.APP_CONFIG = {
 
     {
       id: 'negative_feedback',
+      theme: 'negative',
       name: '一阶负反馈',
       shortTag: '收敛系统',
       feedbackType: '负反馈',
@@ -104,9 +107,10 @@ window.APP_CONFIG = {
       secondaryVars: ['R1', 'X'],
       timeLabel: '时间（周）',
       units: '件',
+      reportText: '一阶负反馈系统的核心特征是“偏差驱动纠偏”。当状态量偏离目标时，系统会自动生成调整动作并逐步收敛，因此适合描述库存控制、温度控制等调节型过程。',
       presets: [
         { key: '教材参数', text: 'D(0)=800，Y=5000，W=4，DT=1，步数=20' },
-        { key: '含义', text: '库存差额 X 驱动订货速度 R1' }
+        { key: '教学重点', text: '库存差额 X 驱动订货速度 R1' }
       ],
       params: [
         { key: 'D', label: '初始库存量 D', desc: '库存变量初值', value: 800, min: 0, max: 5000, step: 10 },
@@ -171,13 +175,13 @@ window.APP_CONFIG = {
     return time, level, rate, gap`,
       diagram: {
         nodes: [
-          { id: 'src', type: 'cloud', x: 70, y: 220, label: '源' },
-          { id: 'valve', type: 'valve', x: 205, y: 220, label: 'R1' },
-          { id: 'stock', type: 'stock', x: 365, y: 220, label: 'D\\n库存量' },
-          { id: 'sink', type: 'cloud', x: 590, y: 220, label: '汇' },
-          { id: 'x', type: 'aux', x: 330, y: 365, label: 'X\\n库存差额' },
-          { id: 'y', type: 'aux', x: 515, y: 365, label: 'Y\\n期望库存' },
-          { id: 'w', type: 'aux', x: 155, y: 365, label: 'W\\n调整时间' }
+          { id: 'src', type: 'cloud', x: 70, y: 220, label: '源', hint: '系统流入端的概念化表示。' },
+          { id: 'valve', type: 'valve', x: 205, y: 220, label: 'R1', hint: '订货速度，受库存差额影响。' },
+          { id: 'stock', type: 'stock', x: 365, y: 220, label: 'D\\n库存量', hint: '系统当前库存。' },
+          { id: 'sink', type: 'cloud', x: 590, y: 220, label: '汇', hint: '系统流出端的概念化表示。' },
+          { id: 'x', type: 'aux', x: 330, y: 365, label: 'X\\n库存差额', hint: '目标库存与当前库存的偏差。' },
+          { id: 'y', type: 'aux', x: 515, y: 365, label: 'Y\\n期望库存', hint: '系统希望达到的库存目标。' },
+          { id: 'w', type: 'aux', x: 155, y: 365, label: 'W\\n调整时间', hint: '库存从偏差调整到目标所需时间。' }
         ],
         links: [
           { from: 'src', to: 'valve', type: 'flow' },
@@ -193,6 +197,7 @@ window.APP_CONFIG = {
 
     {
       id: 'second_order_negative',
+      theme: 'coupled',
       name: '二阶负反馈',
       shortTag: '耦合系统',
       feedbackType: '二阶负反馈',
@@ -203,9 +208,10 @@ window.APP_CONFIG = {
       secondaryVars: ['M', 'R1', 'R2', 'D'],
       timeLabel: '时间（年）',
       units: '人',
+      reportText: '二阶负反馈系统包含双库存耦合结构，表现出比一阶系统更复杂的动态行为。它不仅会纠偏，还可能因为调整滞后出现超调和振荡，更适合描述培养、输送、库存转换等链式系统。',
       presets: [
         { key: '教材参数', text: 'M(0)=2000，Q(0)=1000，Y=6000，Z=5，W=4，DT=1，步数=30' },
-        { key: '含义', text: '供需差 D 同时影响招生率与系统耦合反馈' }
+        { key: '教学重点', text: '供需差 D 通过招生与毕业双通道影响系统状态' }
       ],
       params: [
         { key: 'M', label: '初始在校学生 M', desc: '教育库存变量', value: 2000, min: 0, max: 8000, step: 50 },
@@ -281,16 +287,16 @@ window.APP_CONFIG = {
     return time, M_list, Q_list, R1_list, R2_list, D_list`,
       diagram: {
         nodes: [
-          { id: 'src', type: 'cloud', x: 50, y: 215, label: '源' },
-          { id: 'r1', type: 'valve', x: 170, y: 215, label: 'R1' },
-          { id: 'm', type: 'stock', x: 315, y: 215, label: 'M\\n在校学生' },
-          { id: 'r2', type: 'valve', x: 465, y: 215, label: 'R2' },
-          { id: 'q', type: 'stock', x: 610, y: 215, label: 'Q\\n人才拥有量' },
-          { id: 'sink', type: 'cloud', x: 765, y: 215, label: '汇' },
-          { id: 'd', type: 'aux', x: 455, y: 370, label: 'D\\n供需差' },
-          { id: 'y', type: 'aux', x: 660, y: 370, label: 'Y\\n期望人才量' },
-          { id: 'z', type: 'aux', x: 155, y: 365, label: 'Z\\n调整时间' },
-          { id: 'w', type: 'aux', x: 465, y: 80, label: 'W\\n学制' }
+          { id: 'src', type: 'cloud', x: 50, y: 215, label: '源', hint: '系统流入端的概念化表示。' },
+          { id: 'r1', type: 'valve', x: 170, y: 215, label: 'R1', hint: '招生率，受供需差与调整时间控制。' },
+          { id: 'm', type: 'stock', x: 315, y: 215, label: 'M\\n在校学生', hint: '教育库存，招生流入、毕业流出。' },
+          { id: 'r2', type: 'valve', x: 465, y: 215, label: 'R2', hint: '毕业率，由在校学生数与学制决定。' },
+          { id: 'q', type: 'stock', x: 610, y: 215, label: 'Q\\n人才拥有量', hint: '社会人才库存，由毕业流入形成。' },
+          { id: 'sink', type: 'cloud', x: 765, y: 215, label: '汇', hint: '系统流出端的概念化表示。' },
+          { id: 'd', type: 'aux', x: 455, y: 370, label: 'D\\n供需差', hint: '期望人才量与当前人才量之间的偏差。' },
+          { id: 'y', type: 'aux', x: 660, y: 370, label: 'Y\\n期望人才量', hint: '系统期望达到的人才拥有量。' },
+          { id: 'z', type: 'aux', x: 155, y: 365, label: 'Z\\n调整时间', hint: '招生调节对供需差的响应时间。' },
+          { id: 'w', type: 'aux', x: 465, y: 80, label: 'W\\n学制', hint: '从入学到毕业的平均培养周期。' }
         ],
         links: [
           { from: 'src', to: 'r1', type: 'flow' },
