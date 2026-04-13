@@ -32,7 +32,6 @@
     modelMetaCard: document.getElementById('model-meta-card'),
     presetRow: document.getElementById('preset-row'),
     paramForm: document.getElementById('param-form'),
-    runBtn: document.getElementById('run-btn'),
     resetBtn: document.getElementById('reset-btn'),
     exportBtn: document.getElementById('export-btn'),
     smartTip: document.getElementById('smart-tip'),
@@ -179,6 +178,7 @@
       </div>
     `).join('');
 
+    // 绑定事件：拖动滑块或者输入数字时，自动计算并刷新图表和数据
     [...dom.paramForm.querySelectorAll('input')].forEach(input => {
       input.addEventListener('input', () => {
         const key = input.dataset.key;
@@ -188,6 +188,12 @@
         dom.paramForm.querySelectorAll(`[data-key="${key}"]`).forEach(el => {
           if (el !== input) el.value = val;
         });
+
+        stopPlayback();
+        // 仅局部刷新：图表和数据（避免公式闪烁）
+        renderResult();
+        // 顺便让分析对比页也跟着实时联动
+        renderAnalysis();
       });
     });
   }
@@ -526,7 +532,11 @@
 
     const model = currentModel();
     const labels = result.time;
-    const row0 = result.rows[state.playbackIndex] || result.rows[0];
+    // 保护：如果总步数因参数变小导致 playbackIndex 越界，取末尾
+    if (state.playbackIndex >= result.rows.length) {
+      state.playbackIndex = result.rows.length - 1;
+    }
+    const row0 = result.rows[state.playbackIndex];
 
     let primaryDataset = [];
     let secondarySeries = [];
@@ -575,7 +585,8 @@
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: true } }
+        plugins: { legend: { display: true } },
+        animation: { duration: 0 } // 拖动滑块时禁用动画，让响应更丝滑
       }
     });
 
@@ -601,7 +612,8 @@
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { display: true } }
+        plugins: { legend: { display: true } },
+        animation: { duration: 0 } // 拖动滑块时禁用动画
       }
     });
   }
@@ -859,48 +871,52 @@
     dom.diagramResetBtn.addEventListener('click', resetDiagramTransform);
   }
 
+  // ===== 性能优化核心：分离计算与整体渲染 =====
+  
+  // 1. 局部渲染：只渲染会被参数滑块影响的图表和数据（拖动滑块时调这个，公式不会闪）
   function renderResult() {
     const model = currentModel();
     const params = deepClone(getParams());
     state.result = simulate(model, params);
-    state.playbackIndex = 0;
 
     buildSmartTip(state.result);
     buildInsightBanner(state.result);
-    renderEquations();
     renderKPIs(state.result);
     renderTable(state.result);
     renderCharts(state.result);
-    renderDiagram();
-    renderSteps();
-    renderCode();
     updatePlaybackUI();
-
-    if (window.MathJax?.typesetPromise) {
-      window.MathJax.typesetPromise().catch(() => {});
-    }
   }
 
+  // 2. 整体渲染：切换模型、重置、初次加载时使用（渲染包含 MathJax 公式等重量级 DOM）
   function rerenderAll() {
     setTheme();
     renderModelSwitcher();
     renderMeta();
     renderParamForm();
-    renderResult();
+    
+    // 以下是不需要随滑块实时变动的内容
+    renderEquations();
+    renderDiagram();
+    renderSteps();
+    renderCode();
+    
+    // 初始化计算图表
+    state.playbackIndex = 0;
+    renderResult(); 
     renderAnalysis();
+
+    // 通知 MathJax 重新解析方程
+    if (window.MathJax?.typesetPromise) {
+      window.MathJax.typesetPromise().catch(() => {});
+    }
   }
 
   function bindActions() {
-    dom.runBtn.addEventListener('click', () => {
-      stopPlayback();
-      renderResult();
-    });
-
     dom.resetBtn.addEventListener('click', () => {
       stopPlayback();
       const model = currentModel();
       model.params.forEach(p => state.params[model.id][p.key] = p.value);
-      rerenderAll();
+      rerenderAll(); // 重置所有
     });
 
     dom.exportBtn.addEventListener('click', exportCsv);
